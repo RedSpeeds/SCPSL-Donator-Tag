@@ -19,18 +19,17 @@ namespace SCPSLDonortag
         {
             
 
-                List<String> steamIDs = plugin.getSteamIDs();
                 if (player == null || player.SteamId == null)
                 {
                     plugin.Error("ID or player is null");
                 }
-                if (steamIDs.Contains(player.SteamId))
-                {
-                    String tag = plugin.getTag();
-                    String color = plugin.getColor();
-                    player.SetRole(color, tag);
-                }
-
+            String tag = plugin.getTag(player.SteamId);
+            String color = plugin.getColor(player.SteamId);
+            if (tag == null||color==null)
+            {
+                return;
+            }
+            player.SetRole(color, tag);
         }
     }
 }

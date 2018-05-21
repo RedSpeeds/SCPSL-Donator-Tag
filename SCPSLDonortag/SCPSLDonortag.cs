@@ -13,42 +13,48 @@ namespace SCPSLDonortag
         id = "com.thecreepercow.donortag",
         version = "0.1",
         SmodMajor =2,
-        SmodMinor =0,
-        SmodRevision =13)]
+        SmodMinor =1,
+        SmodRevision =0)]
 
     class SCPSLDonortag : Plugin
     {
-        private List<String> donorList;
-        private String color;
-        private String tag;
         public override void OnDisable()
         {
         }
 
         public override void OnEnable()
         {
-            donorList = new List<string>(GetConfigList("Donors_SteamID"));
-            color = GetConfigString("Donor_Color");
-            tag = GetConfigString("Donor_Tag");
+
         }
-        public String getColor()
+
+        public String getTag(String SteamID)
         {
-            return color;
-        }
-        public List<String> getSteamIDs()
-        {
-            return donorList;
-        }
-        public String getTag()
-        {
+            Dictionary<String, String> SteamIDS = ConfigManager.Manager.Config.GetDictValue("Donor_SteamIDs");
+            if (!SteamIDS.ContainsKey(SteamID))
+            {
+                return null;
+            }
+            String tagID = SteamIDS[SteamID];
+            Dictionary<String, String> tags = ConfigManager.Manager.Config.GetDictValue("Donor_Tags");
+            String tag = tags[tagID].Split('|')[0];
             return tag;
+        }
+        public String getColor(String SteamID)
+        {
+            Dictionary<String, String> SteamIDS = ConfigManager.Manager.Config.GetDictValue("Donor_SteamIDs");
+            if (!SteamIDS.ContainsKey(SteamID))
+            {
+                return null;
+            }
+            String tagID = SteamIDS[SteamID];
+            Dictionary<String, String> tags = ConfigManager.Manager.Config.GetDictValue("Donor_Tags");
+            String color = tags[tagID].Split('|')[1].ToLower();
+            return color;
         }
         public override void Register()
         {
+            String[] defaultvalid = new string[0];
             this.AddEventHandler(typeof(IEventPlayerJoin), new JoinHandler(this), Priority.High);
-            this.AddConfig(new Smod2.Config.ConfigSetting("Donors_SteamID", "", Smod2.Config.SettingType.LIST,true,"SteamIDS of your donors"));
-            this.AddConfig(new Smod2.Config.ConfigSetting("Donor_Tag", "Donator", Smod2.Config.SettingType.STRING, true, "The Donor tag text"));
-            this.AddConfig(new Smod2.Config.ConfigSetting("Donor_Color", "green", Smod2.Config.SettingType.STRING, true, "The Donor tag color"));
         }
     }
 }
