@@ -12,7 +12,7 @@ namespace SCPSLDonortag
          name = "DonorTag",
          description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "2.0",
+        version = "2.1",
         SmodMajor =3,
         SmodMinor =3,
         SmodRevision =0)]
