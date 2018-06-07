@@ -1,13 +1,14 @@
 ﻿using Smod2.API;
 using Smod2;
 using Smod2.Events;
+using Smod2.EventHandlers;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 
 namespace SCPSLDonortag
 {
-    class JoinHandler : IEventPlayerJoin
+    class JoinHandler : IEventHandlerPlayerJoin
     {
         private SCPSLDonortag plugin;
         public JoinHandler(Plugin plugin)
@@ -15,21 +16,19 @@ namespace SCPSLDonortag
             this.plugin =(SCPSLDonortag) plugin;
         }
 
-        public void OnPlayerJoin(Player player)
+        public void OnPlayerJoin(PlayerJoinEvent ev)
         {
-            
-
-                if (player == null || player.SteamId == null)
-                {
-                    plugin.Error("ID or player is null");
-                }
-            String tag = plugin.getTag(player.SteamId);
-            String color = plugin.getColor(player.SteamId);
+            if (ev.Player == null || ev.Player.SteamId == null)
+            {
+                plugin.Error("ID or player is null");
+            }
+            String tag = plugin.getTag(ev.Player.SteamId);
+            String color = plugin.getColor(ev.Player.SteamId);
             if (tag == null||color==null)
             {
                 return;
             }
-            player.SetRole(color, tag);
+            ev.Player.SetRank(color, tag);
         }
     }
 }
