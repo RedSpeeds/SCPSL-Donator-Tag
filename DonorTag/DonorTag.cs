@@ -18,13 +18,12 @@ namespace DonorTag
 
     class DonorTagPlugin : Plugin
     {
-        internal Tag[] donorTags = new Tag[] { };
+        //internal Tag[] donorTags = new Tag[] { };
 
         public override void OnEnable()
         {
-            donorTags = getDonorTags();
-            this.Info("Donor Tags successfully loaded " + donorTags.Length + " entries.");
-			this.Info("donor_tags value: " + string.Join(",", this.GetConfigList("donor_tags")));
+            //donorTags = getDonorTags();
+            this.Info("Donor Tags successfully loaded.");
 		}
 
         public override void OnDisable()
@@ -63,7 +62,7 @@ namespace DonorTag
         
         public override void Register()
         {
-            this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.High);
+            //this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.High);
             this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.High);
 			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags", new string[] { }, Smod2.Config.SettingType.LIST, true, "Two-dimensional array of donor tags."));
 		}
@@ -104,7 +103,7 @@ namespace DonorTag
                 return;
             }
 
-            Tag[] tags = this.plugin.donorTags;
+            Tag[] tags = this.plugin.getDonorTags();
             foreach (Tag tag in tags)
             {
                 if (ev.Player.SteamId == tag.SteamID)
@@ -116,7 +115,7 @@ namespace DonorTag
         }
     }
 
-    class RoundStartHandler : IEventHandlerRoundStart
+    /*class RoundStartHandler : IEventHandlerRoundStart
     {
         private DonorTagPlugin plugin;
 
@@ -127,7 +126,20 @@ namespace DonorTag
 
         public void OnRoundStart(RoundStartEvent ev)
         {
+			this.plugin.Info("Refreshing donor tags from configuration...");
             this.plugin.donorTags = this.plugin.getDonorTags();
+			string output = "";
+			foreach (Tag tag in this.plugin.donorTags)
+			{
+				if (output.Length == 0)
+				{
+					output = tag.ToString();
+				} else
+				{
+					output += ',' + tag.ToString();
+				}
+			}
+			this.plugin.Info("Tags loaded into the server: " + output);
         }
-    }
+    }*/
 }
