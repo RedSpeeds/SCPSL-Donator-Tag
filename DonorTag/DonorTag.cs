@@ -11,7 +11,7 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "3.0.0",
+        version = "3.0.1",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 3)]
@@ -24,7 +24,8 @@ namespace DonorTag
         {
             donorTags = getDonorTags();
             this.Info("Donor Tags successfully loaded " + donorTags.Length + " entries.");
-        }
+			this.Info("donor_tags value: " + string.Join(",", this.GetConfigList("donor_tags")));
+		}
 
         public override void OnDisable()
         {
@@ -64,7 +65,8 @@ namespace DonorTag
         {
             this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.High);
             this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.High);
-        }
+			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags", new string[] { }, Smod2.Config.SettingType.LIST, true, "Two-dimensional array of donor tags."));
+		}
     }
 
     struct Tag
