@@ -7,8 +7,8 @@
     <ProjectGuid>{BFE9B739-56FB-403D-AB29-31263E7A5379}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SCPSLDonortag</RootNamespace>
-    <AssemblyName>SCPSLDonortag</AssemblyName>
+    <RootNamespace>DonorTag</RootNamespace>
+    <AssemblyName>DonorTag</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="JoinHandler.cs" />
-    <Compile Include="SCPSLDonortag.cs" />
+    <Compile Include="DonorTag.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
