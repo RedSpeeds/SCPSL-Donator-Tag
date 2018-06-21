@@ -1,60 +1,135 @@
 ﻿using Smod2;
 using Smod2.Attributes;
 using Smod2.Events;
-using System;
+using Smod2.EventHandlers;
 using System.Collections.Generic;
 
-namespace SCPSLDonortag
+namespace DonorTag
 {
     [PluginDetails(
          author = "TheCreeperCow",
          name = "DonorTag",
          description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "2.0",
-        SmodMajor =2,
-        SmodMinor =1,
-        SmodRevision =0)]
+        version = "3.0.0",
+        SmodMajor = 3,
+        SmodMinor = 1,
+        SmodRevision = 3)]
 
-    class SCPSLDonortag : Plugin
+    class DonorTagPlugin : Plugin
     {
+        internal Tag[] donorTags = new Tag[] { };
+
         public override void OnDisable()
         {
         }
 
         public override void OnEnable()
         {
-
+            donorTags = getDonorTags();
+            this.Info("Donor Tags successfully loaded.");
         }
 
-        public String getTag(String SteamID)
+        public Tag[] getDonorTags()
         {
-            Dictionary<String, String> SteamIDS = ConfigManager.Manager.Config.GetDictValue("Donor_SteamIDs");
-            if (!SteamIDS.ContainsKey(SteamID))
+            string[] donors = this.GetConfigList("donor_tags");
+            Tag[] tags = new Tag[donors.Length];
+            for (int i = 0; i < donors.Length; i++)
             {
-                return null;
+                string donor = donors[i];
+                string[] donorParts = donor.Split(';');
+                if (donorParts.Length < 3)
+                {
+                    this.Warn("Invalid donor tag in configuration: " + donor);
+                    continue;
+                }
+                else if (donorParts.Length == 3)
+                {
+                    tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], "");
+                }
+                else if (donorParts.Length == 4)
+                {
+                    tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3]);
+                }
+                else
+                {
+                    this.Warn("Invalid donor tag in configuration: " + donor);
+                    continue;
+                }
             }
-            String tagID = SteamIDS[SteamID];
-            Dictionary<String, String> tags = ConfigManager.Manager.Config.GetDictValue("Donor_Tags");
-            String tag = tags[tagID].Split('|')[0];
-            return tag;
+            return tags;
         }
         public String getColor(String SteamID)
         {
-            Dictionary<String, String> SteamIDS = ConfigManager.Manager.Config.GetDictValue("Donor_SteamIDs");
-            if (!SteamIDS.ContainsKey(SteamID))
-            {
-                return null;
-            }
-            String tagID = SteamIDS[SteamID];
-            Dictionary<String, String> tags = ConfigManager.Manager.Config.GetDictValue("Donor_Tags");
-            String color = tags[tagID].Split('|')[1].ToLower();
-            return color;
+            return "";
         }
         public override void Register()
         {
             String[] defaultvalid = new string[0];
-            this.AddEventHandler(typeof(IEventPlayerJoin), new JoinHandler(this), Priority.High);
+            this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.High);
+            this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.High);
+        }
+    }
+
+    struct Tag
+    {
+        public string SteamID, name, color, group;
+
+        public Tag(string SteamID, string name, string color, string group)
+        {
+            this.SteamID = SteamID;
+            this.name = name;
+            this.color = color;
+            this.group = group;
+        }
+
+        public override string ToString()
+        {
+            return "SteamID:" + SteamID + ";Name:" + name + ";Color:" + color + ";Group:" + group;
+        }
+    }
+
+    class JoinHandler : IEventHandlerPlayerJoin
+    {
+        private DonorTagPlugin plugin;
+
+        public JoinHandler(Plugin plugin)
+        {
+            this.plugin = (DonorTagPlugin) plugin;
+        }
+
+        public void OnPlayerJoin(PlayerJoinEvent ev)
+        {
+            if (ev.Player == null || ev.Player.SteamId == null)
+            {
+                plugin.Error("Player is null or the PlayerJoinEvent failed to pass the player's SteamID.");
+                return;
+            }
+
+            Tag[] tags = this.plugin.donorTags;
+            foreach (Tag tag in tags)
+            {
+                if (ev.Player.SteamId == tag.SteamID)
+                {
+                    ev.Player.SetRank(tag.color, tag.name, tag.group);
+                    break;
+                }
+            }
+        }
+    }
+
+    class RoundStartHandler : IEventHandlerRoundStart
+    {
+        private DonorTagPlugin plugin;
+
+        public RoundStartHandler(Plugin plugin)
+        {
+            this.plugin = (DonorTagPlugin)plugin;
+        }
+
+        public void OnRoundStart(RoundStartEvent ev)
+        {
+            this.plugin.donorTags = this.plugin.getDonorTags();
         }
     }
 }
