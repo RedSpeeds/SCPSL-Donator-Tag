@@ -7,9 +7,9 @@ using System.Collections.Generic;
 namespace DonorTag
 {
     [PluginDetails(
-         author = "TheCreeperCow",
-         name = "DonorTag",
-         description = "Gives donors fancy tags",
+        author = "TheCreeperCow",
+        name = "DonorTag",
+        description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
         version = "3.0.0",
         SmodMajor = 3,
@@ -20,14 +20,14 @@ namespace DonorTag
     {
         internal Tag[] donorTags = new Tag[] { };
 
-        public override void OnDisable()
-        {
-        }
-
         public override void OnEnable()
         {
             donorTags = getDonorTags();
-            this.Info("Donor Tags successfully loaded.");
+            this.Info("Donor Tags successfully loaded " + donorTags.Length + " entries.");
+        }
+
+        public override void OnDisable()
+        {
         }
 
         public Tag[] getDonorTags()
@@ -59,13 +59,9 @@ namespace DonorTag
             }
             return tags;
         }
-        public String getColor(String SteamID)
-        {
-            return "";
-        }
+        
         public override void Register()
         {
-            String[] defaultvalid = new string[0];
             this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.High);
             this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.High);
         }
