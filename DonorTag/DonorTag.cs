@@ -13,10 +13,10 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "4.0.5",
+        version = "4.0.6",
         SmodMajor = 3,
         SmodMinor = 1,
-        SmodRevision = 3)]
+        SmodRevision = 17)]
 
     class DonorTagPlugin : Plugin
     {
