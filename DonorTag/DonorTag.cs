@@ -3,6 +3,8 @@ using Smod2.Attributes;
 using Smod2.Events;
 using Smod2.EventHandlers;
 using System.Collections.Generic;
+using System.IO;
+using System;
 
 namespace DonorTag
 {
@@ -11,7 +13,7 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "3.0.1",
+        version = "4.0.0",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 3)]
@@ -31,32 +33,79 @@ namespace DonorTag
         }
 
         public Tag[] getDonorTags()
-        {
-            string[] donors = this.GetConfigList("donor_tags");
-            Tag[] tags = new Tag[donors.Length];
-            for (int i = 0; i < donors.Length; i++)
-            {
-                string donor = donors[i];
-                string[] donorParts = donor.Split(';');
-                if (donorParts.Length < 3)
-                {
-                    this.Warn("Invalid donor tag in configuration: " + donor);
-                    continue;
-                }
-                else if (donorParts.Length == 3)
-                {
-                    tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], "");
-                }
-                else if (donorParts.Length == 4)
-                {
-                    tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3]);
-                }
-                else
-                {
-                    this.Warn("Invalid donor tag in configuration: " + donor);
-                    continue;
-                }
-            }
+		{
+			Tag[] tags = new Tag[0];
+			if (this.GetConfigBool("donor_tags_use_config_mode"))
+			{
+				string[] donors = this.GetConfigList("donor_tags");
+				tags = new Tag[donors.Length];
+				for (int i = 0; i < donors.Length; i++)
+				{
+					string donor = donors[i];
+					string[] donorParts = donor.Split(';');
+					if (donorParts.Length < 3)
+					{
+						this.Warn("Invalid donor tag in configuration: " + donor);
+						continue;
+					}
+					else if (donorParts.Length == 3)
+					{
+						tags[i] = new Tag("", donorParts[0], donorParts[1], donorParts[2], "");
+					}
+					else if (donorParts.Length == 4)
+					{
+						tags[i] = new Tag("", donorParts[0], donorParts[1], donorParts[2], donorParts[3]);
+					}
+					else
+					{
+						this.Warn("Invalid donor tag in configuration: " + donor);
+						continue;
+					}
+				}
+			}
+			else
+			{
+				if (!File.Exists("DonorTags.csv"))
+				{
+					File.Create("DonorTags.csv");
+					File.AppendAllText("DonorTags.csv", "player_name,steamid,role_name,color,group" + Environment.NewLine);
+				}
+
+				using (var reader = new StreamReader("DonorTags.csv"))
+				{
+					List<String[]> rows = new List<String[]>();
+					while (!reader.EndOfStream)
+					{
+						var line = reader.ReadLine();
+						rows.Add(line.Split(','));
+					}
+
+					List<Tag> tempList = new List<Tag>();
+					for (int i = 0; i < rows.Count; i++)
+					{
+						if (i == 0)
+						{
+							continue;
+						}
+
+						String[] donorParts = rows[i];
+						if (donorParts.Length == 3)
+						{
+							tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], "");
+						}
+						else if (donorParts.Length == 4)
+						{
+							tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], donorParts[4]);
+						}
+						else
+						{
+							this.Warn("Invalid donor tag in configuration missing : " + string.Join(",", donorParts));
+							continue;
+						}
+
+					}
+				}
+			}
             return tags;
         }
         
@@ -64,25 +113,27 @@ namespace DonorTag
         {
             //this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.High);
             this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.High);
+			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags_use_config_mode", false, Smod2.Config.SettingType.BOOL, true, "If a donor tags configuration setting exceeds 256, and especially 512 characters it will glitch our your server."));
 			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags", new string[] { }, Smod2.Config.SettingType.LIST, true, "Two-dimensional array of donor tags."));
 		}
     }
 
     struct Tag
     {
-        public string SteamID, name, color, group;
+        public string playerName, steamID, rankName, color, group;
 
-        public Tag(string SteamID, string name, string color, string group)
+        public Tag(string playerName, string steamID, string rankName, string color, string group)
         {
-            this.SteamID = SteamID;
-            this.name = name;
+			this.playerName = playerName;
+			this.steamID = steamID;
+            this.rankName = rankName;
             this.color = color;
             this.group = group;
         }
 
         public override string ToString()
         {
-            return "SteamID:" + SteamID + ";Name:" + name + ";Color:" + color + ";Group:" + group;
+            return playerName + "," + steamID + "," + rankName + "," + color + "," + group;
         }
     }
 
@@ -102,13 +153,13 @@ namespace DonorTag
                 plugin.Error("Player is null or the PlayerJoinEvent failed to pass the player's SteamID.");
                 return;
             }
-
+			
             Tag[] tags = this.plugin.getDonorTags();
             foreach (Tag tag in tags)
             {
-                if (ev.Player.SteamId == tag.SteamID)
+                if (ev.Player.SteamId == tag.steamID)
                 {
-                    ev.Player.SetRank(tag.color, tag.name, tag.group);
+                    ev.Player.SetRank(tag.color, tag.rankName, tag.group);
                     break;
                 }
             }
