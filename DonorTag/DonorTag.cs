@@ -69,7 +69,7 @@ namespace DonorTag
 				{
 					//File.Create("DonorTags.csv");
 					File.AppendAllText("DonorTags.csv", "player_name,steamid,role_name,color,group" + Environment.NewLine);
-					this.Info("Created DonorTags.csv with header row: player_name,steamid,role_name,color,group");
+					this.Debug("Created DonorTags.csv with header row: player_name,steamid,role_name,color,group");
 				}
 
 				using (var reader = new StreamReader("DonorTags.csv"))
@@ -86,28 +86,28 @@ namespace DonorTag
 					{
 						if (i == 0)
 						{
-							this.Info("Skipping header row: " + string.Join(",", rows[i]));
+							this.Debug("Skipping header row: " + string.Join(",", rows[i]));
 							continue;
 						}
 
 						String[] donorParts = rows[i];
 						if (donorParts.Length == 3)
 						{
-							tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], "");
-							this.Info("Adding tag: " + tags[i]);
+							tempList.Add(new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], ""));
+							this.Debug("Adding tag: " + tags[i]);
 						}
 						else if (donorParts.Length == 4)
 						{
-							tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], donorParts[4]);
-							this.Info("Adding tag with group: " + tags[i]);
+							tempList.Add(new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], donorParts[4]));
+							this.Debug("Adding tag with group: " + tags[i]);
 						}
 						else
 						{
 							this.Warn("Invalid donor tag in configuration missing : " + string.Join(",", donorParts));
 							continue;
 						}
-
 					}
+					tags = tempList.ToArray();
 				}
 			}
             return tags;
