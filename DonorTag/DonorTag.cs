@@ -13,7 +13,7 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "4.0.3",
+        version = "4.0.4",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 3)]
@@ -94,12 +94,12 @@ namespace DonorTag
 						if (donorParts.Length == 4)
 						{
 							tempList.Add(new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], ""));
-							this.Debug("Adding tag: " + tags[i]);
+							this.Debug("Adding tag: " + tempList[tempList.Count - 1]);
 						}
 						else if (donorParts.Length == 5)
 						{
 							tempList.Add(new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], donorParts[4]));
-							this.Debug("Adding tag with group: " + tags[i]);
+							this.Debug("Adding tag: " + tempList[tempList.Count - 1]);
 						}
 						else
 						{
