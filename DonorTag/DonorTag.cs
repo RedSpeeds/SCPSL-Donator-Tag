@@ -13,7 +13,7 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "4.0.1",
+        version = "4.0.2",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 3)]
@@ -69,6 +69,7 @@ namespace DonorTag
 				{
 					//File.Create("DonorTags.csv");
 					File.AppendAllText("DonorTags.csv", "player_name,steamid,role_name,color,group" + Environment.NewLine);
+					this.Info("Created DonorTags.csv with header row: player_name,steamid,role_name,color,group");
 				}
 
 				using (var reader = new StreamReader("DonorTags.csv"))
@@ -85,6 +86,7 @@ namespace DonorTag
 					{
 						if (i == 0)
 						{
+							this.Info("Skipping header row: " + string.Join(",", rows[i]));
 							continue;
 						}
 
@@ -92,10 +94,12 @@ namespace DonorTag
 						if (donorParts.Length == 3)
 						{
 							tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], "");
+							this.Info("Adding tag: " + tags[i]);
 						}
 						else if (donorParts.Length == 4)
 						{
 							tags[i] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], donorParts[4]);
+							this.Info("Adding tag with group: " + tags[i]);
 						}
 						else
 						{
@@ -157,15 +161,18 @@ namespace DonorTag
             Tag[] tags;
 			if (this.plugin.donorTags.Length == 0)
 			{
+				this.plugin.Info("Donor Tags array is empty. Populate it with tags.");
 				tags = this.plugin.getDonorTags();
 				this.plugin.donorTags = tags;
 			}
 			else
 			{
+				this.plugin.Info("Using cached Donor Tags array for player.");
 				tags = this.plugin.donorTags;
 			}
             foreach (Tag tag in tags)
             {
+				this.plugin.Info("Is this player a donor? " + ev.Player.SteamId + " == " + tag.steamID);
                 if (ev.Player.SteamId == tag.steamID)
                 {
                     ev.Player.SetRank(tag.color, tag.rankName, tag.group);
