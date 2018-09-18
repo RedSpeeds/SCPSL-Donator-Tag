@@ -13,7 +13,7 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "4.0.4",
+        version = "4.0.5",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 3)]
@@ -115,7 +115,7 @@ namespace DonorTag
         
         public override void Register()
         {
-            //this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.High);
+            this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.High);
             this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.High);
 			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags_use_config_mode", false, Smod2.Config.SettingType.BOOL, true, "If a donor tags configuration setting exceeds 256, and especially 512 characters it will glitch our your server."));
 			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags", new string[] { }, Smod2.Config.SettingType.LIST, true, "Two-dimensional array of donor tags."));
@@ -161,18 +161,18 @@ namespace DonorTag
             Tag[] tags;
 			if (this.plugin.donorTags.Length == 0)
 			{
-				this.plugin.Info("Donor Tags array is empty. Populate it with tags.");
+				this.plugin.Debug("Donor Tags array is empty. Populate it with tags.");
 				tags = this.plugin.getDonorTags();
 				this.plugin.donorTags = tags;
 			}
 			else
 			{
-				this.plugin.Info("Using cached Donor Tags array for player.");
+				this.plugin.Debug("Using cached Donor Tags array for player.");
 				tags = this.plugin.donorTags;
 			}
             foreach (Tag tag in tags)
             {
-				this.plugin.Info("Is this player a donor? " + ev.Player.SteamId + " == " + tag.steamID);
+				this.plugin.Debug("Is this player a donor? " + ev.Player.SteamId + " == " + tag.steamID);
                 if (ev.Player.SteamId == tag.steamID)
                 {
                     ev.Player.SetRank(tag.color, tag.rankName, tag.group);
@@ -182,7 +182,7 @@ namespace DonorTag
         }
     }
 
-    /*class RoundStartHandler : IEventHandlerRoundStart
+    class RoundStartHandler : IEventHandlerRoundStart
     {
         private DonorTagPlugin plugin;
 
@@ -195,7 +195,7 @@ namespace DonorTag
         {
 			this.plugin.Info("Refreshing donor tags from configuration...");
             this.plugin.donorTags = this.plugin.getDonorTags();
-			string output = "";
+			/*string output = "";
 			foreach (Tag tag in this.plugin.donorTags)
 			{
 				if (output.Length == 0)
@@ -206,7 +206,7 @@ namespace DonorTag
 					output += ',' + tag.ToString();
 				}
 			}
-			this.plugin.Info("Tags loaded into the server: " + output);
+			this.plugin.Info("Tags loaded into the server: " + output);*/
         }
-    }*/
+    }
 }
