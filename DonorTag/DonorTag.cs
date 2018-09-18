@@ -13,18 +13,18 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "4.0.0",
+        version = "4.0.1",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 3)]
 
     class DonorTagPlugin : Plugin
     {
-        //internal Tag[] donorTags = new Tag[] { };
+        internal Tag[] donorTags = new Tag[0];
 
         public override void OnEnable()
         {
-            //donorTags = getDonorTags();
+            donorTags = getDonorTags();
             this.Info("Donor Tags successfully loaded.");
 		}
 
@@ -67,7 +67,7 @@ namespace DonorTag
 			{
 				if (!File.Exists("DonorTags.csv"))
 				{
-					File.Create("DonorTags.csv");
+					//File.Create("DonorTags.csv");
 					File.AppendAllText("DonorTags.csv", "player_name,steamid,role_name,color,group" + Environment.NewLine);
 				}
 
@@ -154,7 +154,16 @@ namespace DonorTag
                 return;
             }
 			
-            Tag[] tags = this.plugin.getDonorTags();
+            Tag[] tags;
+			if (this.plugin.donorTags.Length == 0)
+			{
+				tags = this.plugin.getDonorTags();
+				this.plugin.donorTags = tags;
+			}
+			else
+			{
+				tags = this.plugin.donorTags;
+			}
             foreach (Tag tag in tags)
             {
                 if (ev.Player.SteamId == tag.steamID)
