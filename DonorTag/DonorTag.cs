@@ -14,7 +14,7 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "4.1.7",
+        version = "4.1.8",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 17)]
@@ -26,7 +26,12 @@ namespace DonorTag
         public override void OnEnable()
         {
             this.donorTags = getDonorTags();
-            this.Info("Donor Tags successfully loaded.");
+			this.Info("Loading tags into the server...");
+			foreach (Tag tag in this.donorTags.Values)
+			{
+				this.Info(tag.ToString());
+			}
+			this.Info("Donor Tags successfully loaded.");
 		}
 
         public override void OnDisable()
@@ -170,6 +175,7 @@ namespace DonorTag
 			{
 				Tag tag = this.plugin.donorTags[ev.Player.SteamId];
 				ev.Player.SetRank(tag.color, tag.rankName, tag.group);
+				this.plugin.Debug("Set tag for player: " + tag);
 			}
         }
     }
@@ -193,20 +199,9 @@ namespace DonorTag
 				{
 					Tag tag = this.plugin.donorTags[player.SteamId];
 					player.SetRank(tag.color, tag.rankName, tag.group);
+					this.plugin.Debug("Set tag for player: " + tag);
 				}
 			}
-			string output = "";
-			foreach (Tag tag in this.plugin.donorTags.Values)
-			{
-				if (output.Length == 0)
-				{
-					output = tag.ToString();
-				} else
-				{
-					output += ',' + tag.ToString();
-				}
-			}
-			this.plugin.Info("Tags loaded into the server: " + output);
         }
     }
 }
