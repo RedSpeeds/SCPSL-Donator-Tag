@@ -5,6 +5,7 @@ using Smod2.EventHandlers;
 using System.Collections.Generic;
 using System.IO;
 using System;
+using Smod2.API;
 
 namespace DonorTag
 {
@@ -13,18 +14,18 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "4.0.6",
+        version = "4.1.7",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 17)]
 
     class DonorTagPlugin : Plugin
     {
-        internal Tag[] donorTags = new Tag[0];
+        internal Dictionary<string, Tag> donorTags = new Dictionary<string, Tag>();
 
         public override void OnEnable()
         {
-            donorTags = getDonorTags();
+            this.donorTags = getDonorTags();
             this.Info("Donor Tags successfully loaded.");
 		}
 
@@ -32,13 +33,12 @@ namespace DonorTag
         {
         }
 
-        public Tag[] getDonorTags()
+        public Dictionary<string, Tag> getDonorTags()
 		{
-			Tag[] tags = new Tag[0];
+			Dictionary<string, Tag> tags = new Dictionary<string, Tag>();
 			if (this.GetConfigBool("donor_tags_use_config_mode"))
 			{
 				string[] donors = this.GetConfigList("donor_tags");
-				tags = new Tag[donors.Length];
 				for (int i = 0; i < donors.Length; i++)
 				{
 					string donor = donors[i];
@@ -50,11 +50,11 @@ namespace DonorTag
 					}
 					else if (donorParts.Length == 3)
 					{
-						tags[i] = new Tag("", donorParts[0], donorParts[1], donorParts[2], "");
+						tags[donorParts[0]] = new Tag("", donorParts[0], donorParts[1], donorParts[2], "");
 					}
 					else if (donorParts.Length == 4)
 					{
-						tags[i] = new Tag("", donorParts[0], donorParts[1], donorParts[2], donorParts[3]);
+						tags[donorParts[0]] = new Tag("", donorParts[0], donorParts[1], donorParts[2], donorParts[3]);
 					}
 					else
 					{
@@ -80,8 +80,7 @@ namespace DonorTag
 						var line = reader.ReadLine();
 						rows.Add(line.Split(','));
 					}
-
-					List<Tag> tempList = new List<Tag>();
+					
 					for (int i = 0; i < rows.Count; i++)
 					{
 						if (i == 0)
@@ -93,13 +92,13 @@ namespace DonorTag
 						String[] donorParts = rows[i];
 						if (donorParts.Length == 4)
 						{
-							tempList.Add(new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], ""));
-							this.Debug("Adding tag: " + tempList[tempList.Count - 1]);
+							tags[donorParts[1]] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], "");
+							this.Debug("Adding tag: " + tags[donorParts[1]]);
 						}
 						else if (donorParts.Length == 5)
 						{
-							tempList.Add(new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], donorParts[4]));
-							this.Debug("Adding tag: " + tempList[tempList.Count - 1]);
+							tags[donorParts[1]] = new Tag(donorParts[0], donorParts[1], donorParts[2], donorParts[3], donorParts[4]);
+							this.Debug("Adding tag: " + tags[donorParts[1]]);
 						}
 						else
 						{
@@ -107,7 +106,6 @@ namespace DonorTag
 							continue;
 						}
 					}
-					tags = tempList.ToArray();
 				}
 			}
             return tags;
@@ -158,27 +156,21 @@ namespace DonorTag
                 return;
             }
 			
-            Tag[] tags;
-			if (this.plugin.donorTags.Length == 0)
+			if (this.plugin.donorTags.Count == 0)
 			{
 				this.plugin.Debug("Donor Tags array is empty. Populate it with tags.");
-				tags = this.plugin.getDonorTags();
-				this.plugin.donorTags = tags;
+				this.plugin.donorTags = this.plugin.getDonorTags();
 			}
 			else
 			{
 				this.plugin.Debug("Using cached Donor Tags array for player.");
-				tags = this.plugin.donorTags;
 			}
-            foreach (Tag tag in tags)
-            {
-				this.plugin.Debug("Is this player a donor? " + ev.Player.SteamId + " == " + tag.steamID);
-                if (ev.Player.SteamId == tag.steamID)
-                {
-                    ev.Player.SetRank(tag.color, tag.rankName, tag.group);
-                    break;
-                }
-            }
+
+			if (this.plugin.donorTags.ContainsKey(ev.Player.SteamId))
+			{
+				Tag tag = this.plugin.donorTags[ev.Player.SteamId];
+				ev.Player.SetRank(tag.color, tag.rankName, tag.group);
+			}
         }
     }
 
@@ -195,8 +187,16 @@ namespace DonorTag
         {
 			this.plugin.Info("Refreshing donor tags from configuration...");
             this.plugin.donorTags = this.plugin.getDonorTags();
-			/*string output = "";
-			foreach (Tag tag in this.plugin.donorTags)
+			foreach (Player player in ev.Server.GetPlayers())
+			{
+				if (this.plugin.donorTags.ContainsKey(player.SteamId))
+				{
+					Tag tag = this.plugin.donorTags[player.SteamId];
+					player.SetRank(tag.color, tag.rankName, tag.group);
+				}
+			}
+			string output = "";
+			foreach (Tag tag in this.plugin.donorTags.Values)
 			{
 				if (output.Length == 0)
 				{
@@ -206,7 +206,7 @@ namespace DonorTag
 					output += ',' + tag.ToString();
 				}
 			}
-			this.plugin.Info("Tags loaded into the server: " + output);*/
+			this.plugin.Info("Tags loaded into the server: " + output);
         }
     }
 }
