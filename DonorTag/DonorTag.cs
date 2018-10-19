@@ -14,7 +14,7 @@ namespace DonorTag
         name = "DonorTag",
         description = "Gives donors fancy tags",
         id = "com.thecreepercow.donortag",
-        version = "4.1.8",
+        version = "4.1.9",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 17)]
@@ -118,8 +118,8 @@ namespace DonorTag
         
         public override void Register()
         {
-            this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.High);
-            this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.High);
+            this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.Highest);
+            this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.Highest);
 			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags_use_config_mode", false, Smod2.Config.SettingType.BOOL, true, "If a donor tags configuration setting exceeds 256, and especially 512 characters it will glitch our your server."));
 			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags", new string[] { }, Smod2.Config.SettingType.LIST, true, "Two-dimensional array of donor tags."));
 		}
