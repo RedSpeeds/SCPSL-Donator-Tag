@@ -9,23 +9,23 @@ using Smod2.API;
 
 namespace DonorTag
 {
-    [PluginDetails(
-        author = "TheCreeperCow",
-        name = "DonorTag",
-        description = "Gives donors fancy tags",
-        id = "com.thecreepercow.donortag",
-        version = "4.1.9",
-        SmodMajor = 3,
-        SmodMinor = 1,
-        SmodRevision = 17)]
+	[PluginDetails(
+		author = "TheCreeperCow",
+		name = "DonorTag",
+		description = "Gives donors fancy tags",
+		id = "com.thecreepercow.donortag",
+		version = "4.1.10",
+		SmodMajor = 3,
+		SmodMinor = 1,
+		SmodRevision = 17)]
 
-    class DonorTagPlugin : Plugin
-    {
-        internal Dictionary<string, Tag> donorTags = new Dictionary<string, Tag>();
+	class DonorTagPlugin : Plugin
+	{
+		internal Dictionary<string, Tag> donorTags = new Dictionary<string, Tag>();
 
-        public override void OnEnable()
-        {
-            this.donorTags = getDonorTags();
+		public override void OnEnable()
+		{
+			this.donorTags = getDonorTags();
 			this.Info("Loading tags into the server...");
 			foreach (Tag tag in this.donorTags.Values)
 			{
@@ -34,11 +34,11 @@ namespace DonorTag
 			this.Info("Donor Tags successfully loaded.");
 		}
 
-        public override void OnDisable()
-        {
-        }
+		public override void OnDisable()
+		{
+		}
 
-        public Dictionary<string, Tag> getDonorTags()
+		public Dictionary<string, Tag> getDonorTags()
 		{
 			Dictionary<string, Tag> tags = new Dictionary<string, Tag>();
 			if (this.GetConfigBool("donor_tags_use_config_mode"))
@@ -73,8 +73,8 @@ namespace DonorTag
 				if (!File.Exists("DonorTags.csv"))
 				{
 					//File.Create("DonorTags.csv");
-					File.AppendAllText("DonorTags.csv", "player_name,steamid,role_name,color,group" + Environment.NewLine);
-					this.Debug("Created DonorTags.csv with header row: player_name,steamid,role_name,color,group");
+					File.AppendAllText("DonorTags.csv", "discord,steam,rank,color,group" + Environment.NewLine);
+					this.Debug("Created DonorTags.csv with header row: discord,steam,rank,color,group");
 				}
 
 				using (var reader = new StreamReader("DonorTags.csv"))
@@ -113,53 +113,53 @@ namespace DonorTag
 					}
 				}
 			}
-            return tags;
-        }
-        
-        public override void Register()
-        {
-            this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.Highest);
-            this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.Highest);
+			return tags;
+		}
+		
+		public override void Register()
+		{
+			this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.Highest);
+			this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new JoinHandler(this), Priority.Highest);
 			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags_use_config_mode", false, Smod2.Config.SettingType.BOOL, true, "If a donor tags configuration setting exceeds 256, and especially 512 characters it will glitch our your server."));
 			this.AddConfig(new Smod2.Config.ConfigSetting("donor_tags", new string[] { }, Smod2.Config.SettingType.LIST, true, "Two-dimensional array of donor tags."));
 		}
-    }
+	}
 
-    struct Tag
-    {
-        public string playerName, steamID, rankName, color, group;
+	struct Tag
+	{
+		public string discord, steam, rank, color, group;
 
-        public Tag(string playerName, string steamID, string rankName, string color, string group)
-        {
-			this.playerName = playerName;
-			this.steamID = steamID;
-            this.rankName = rankName;
-            this.color = color;
-            this.group = group;
-        }
+		public Tag(string discord, string steam, string rank, string color, string group)
+		{
+			this.discord = discord;
+			this.steam = steam;
+			this.rank = rank;
+			this.color = color;
+			this.group = group;
+		}
 
-        public override string ToString()
-        {
-            return playerName + "," + steamID + "," + rankName + "," + color + "," + group;
-        }
-    }
+		public override string ToString()
+		{
+			return discord + "," + steam + "," + rank + "," + color + "," + group;
+		}
+	}
 
-    class JoinHandler : IEventHandlerPlayerJoin
-    {
-        private DonorTagPlugin plugin;
+	class JoinHandler : IEventHandlerPlayerJoin
+	{
+		private DonorTagPlugin plugin;
 
-        public JoinHandler(Plugin plugin)
-        {
-            this.plugin = (DonorTagPlugin) plugin;
-        }
+		public JoinHandler(Plugin plugin)
+		{
+			this.plugin = (DonorTagPlugin) plugin;
+		}
 
-        public void OnPlayerJoin(PlayerJoinEvent ev)
-        {
-            if (ev.Player == null || ev.Player.SteamId == null)
-            {
-                plugin.Error("Player is null or the PlayerJoinEvent failed to pass the player's SteamID.");
-                return;
-            }
+		public void OnPlayerJoin(PlayerJoinEvent ev)
+		{
+			if (ev.Player == null || ev.Player.SteamId == null)
+			{
+				plugin.Error("Player is null or the PlayerJoinEvent failed to pass the player's SteamID.");
+				return;
+			}
 			
 			if (this.plugin.donorTags.Count == 0)
 			{
@@ -174,34 +174,48 @@ namespace DonorTag
 			if (this.plugin.donorTags.ContainsKey(ev.Player.SteamId))
 			{
 				Tag tag = this.plugin.donorTags[ev.Player.SteamId];
-				ev.Player.SetRank(tag.color, tag.rankName, tag.group);
+				if (tag.group.Length > 0)
+				{
+					ev.Player.SetRank(tag.color, tag.rank, tag.group);
+				}
+				else
+				{
+					ev.Player.SetRank(tag.color, tag.rank);
+				}
 				this.plugin.Debug("Set tag for player: " + tag);
 			}
-        }
-    }
+		}
+	}
 
-    class RoundStartHandler : IEventHandlerRoundStart
-    {
-        private DonorTagPlugin plugin;
+	class RoundStartHandler : IEventHandlerRoundStart
+	{
+		private DonorTagPlugin plugin;
 
-        public RoundStartHandler(Plugin plugin)
-        {
-            this.plugin = (DonorTagPlugin)plugin;
-        }
+		public RoundStartHandler(Plugin plugin)
+		{
+			this.plugin = (DonorTagPlugin)plugin;
+		}
 
-        public void OnRoundStart(RoundStartEvent ev)
-        {
+		public void OnRoundStart(RoundStartEvent ev)
+		{
 			this.plugin.Info("Refreshing donor tags from configuration...");
-            this.plugin.donorTags = this.plugin.getDonorTags();
+			this.plugin.donorTags = this.plugin.getDonorTags();
 			foreach (Player player in ev.Server.GetPlayers())
 			{
 				if (this.plugin.donorTags.ContainsKey(player.SteamId))
 				{
 					Tag tag = this.plugin.donorTags[player.SteamId];
-					player.SetRank(tag.color, tag.rankName, tag.group);
+					if (tag.group.Length > 0)
+					{
+						player.SetRank(tag.color, tag.rank, tag.group);
+					}
+					else
+					{
+						player.SetRank(tag.color, tag.rank);
+					}
 					this.plugin.Debug("Set tag for player: " + tag);
 				}
 			}
-        }
-    }
+		}
+	}
 }
